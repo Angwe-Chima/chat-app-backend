@@ -25,7 +25,7 @@ const io = new Server(server, {
 
 const __dirname = path.resolve();
 
-// Middleware
+// Middleware (in correct order - BEFORE routes)
 app.use(cors({
   origin: ["https://angwe-chima.github.io/chat-app-frontend/", "http://localhost:3000"],
   credentials: true,
@@ -33,7 +33,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+// Routes (AFTER middleware)
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/users", userRoutes);
