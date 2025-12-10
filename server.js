@@ -17,7 +17,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["https://angwe-chima.github.io/chat-app-frontend/", "http://localhost:3000"],
+    origin: ["https://angwe-chima.github.io", "http://localhost:3000"],
     methods: ["GET", "POST"],
     credentials: true,
   },  
@@ -27,11 +27,16 @@ const __dirname = path.resolve();
 
 // Middleware (in correct order - BEFORE routes)
 app.use(cors({
-  origin: ["https://angwe-chima.github.io/chat-app-frontend/", "http://localhost:3000"],
+  origin: ["https://angwe-chima.github.io", "http://localhost:3000"],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Handle preflight requests
+app.options("*", cors());
 
 // Routes (AFTER middleware)
 app.use("/api/auth", authRoutes);
