@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
@@ -16,14 +17,19 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["https://angwe-chima.github.io/", "https://angwe-chima.github.io/chat-app-frontend/"],
+    origin: ["https://angwe-chima.github.io/chat-app-frontend/", "http://localhost:3000"],
     methods: ["GET", "POST"],
+    credentials: true,
   },  
 });
 
 const __dirname = path.resolve();
 
 // Middleware
+app.use(cors({
+  origin: ["https://angwe-chima.github.io/chat-app-frontend/", "http://localhost:3000"],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
 
