@@ -55,7 +55,6 @@ export const signup = async (req, res) => {
         profilePic: newUser.profilePic,
       };
 
-      console.log("User created successfully:", userData);
       res.status(201).json(userData);
     } else {
       return res.status(400).json({ error: "Invalid user data" });

@@ -18,9 +18,10 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "https://angwe-chima.github.io",
-  "http://localhost:5173",      // Vite default
-  "http://localhost:3000",       // Alternative dev port
-  "http://127.0.0.1:5173",       // Localhost variant
+  "http://localhost:5173", // Vite default
+  "http://localhost:3000", // Alternative dev port
+  "http://127.0.0.1:5173",
+  "https://chat-app-backend-u08y.onrender.com" // Localhost variant
 ];
 
 const io = new Server(server, {
@@ -29,17 +30,28 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+  transports: ["websocket", "polling"],
+  pingInterval: 25000,
+  pingTimeout: 60000,
+  allowUpgrades: true,
 });
 
 const __dirname = path.resolve();
 
 // CORS Configuration
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Middleware (in correct order - BEFORE routes)
 app.use(express.json());
