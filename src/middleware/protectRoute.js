@@ -1,45 +1,30 @@
-import jwt from 'jsonwebtoken';
-import User from "../models/user.model.js"; 
+import jwt from "jsonwebtoken";
 
-const protectRoute = async (req, res, next) => {
+const protectRoute = (req, res, next) => {
   try {
-    // Try to get token from cookies (standard approach)
-    let token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    let token;
 
-    // Fallback: try Authorization header if cookie not found
-    if (!token && req.headers.authorization) {
-      token = req.headers.authorization.split(" ")[1];
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      token = req.cookies.token;
     }
 
     if (!token) {
-      return res.status(401).json({ 
-        error: "Unauthorized - No token provided" 
-      });
+      return res.status(401).json({ error: "Unauthorized - No token provided" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (!decoded) {
-      return res.status(401).json({ 
-        error: "Unauthorized - Invalid token" 
-      });
-    }
-
-    const user = await User.findById(decoded.userID).select("-password");
-
-    if (!user) {
-      return res.status(404).json({ 
-        error: "User not found" 
-      });
-    }
-
-    req.user = user;
+    
+    // IMPORTANT: Set req.user._id from the token payload (userID)
+    req.user = {
+      _id: decoded.userID,
+    };
+    
     next();
-  } catch (err) {
-    console.log("Error in protect route middleware: " + err.message);
-    res.status(401).json({ 
-      error: "Unauthorized - " + err.message 
-    });
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
 

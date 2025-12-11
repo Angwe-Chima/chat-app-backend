@@ -1,5 +1,7 @@
+/* --- controllers/auth.controller.js --- */
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
 import catchHandler from "../utils/handleCatchError.js";
 
@@ -9,7 +11,6 @@ export const signup = async (req, res) => {
 
     const { fullName, userName, password, confirmPassword, gender } = req.body;
 
-    // Validation
     if (!fullName || !userName || !password || !confirmPassword || !gender) {
       return res.status(400).json({
         error: "All fields are required",
@@ -29,7 +30,6 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Hash password here
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -48,11 +48,16 @@ export const signup = async (req, res) => {
       await newUser.save();
       generateTokenAndSetCookie(newUser._id, res);
 
+      const token = jwt.sign({ userID: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "14d",
+      });
+
       const userData = {
         _id: newUser._id,
         fullName: newUser.fullName,
         userName: newUser.userName,
         profilePic: newUser.profilePic,
+        token: token,
       };
 
       res.status(201).json(userData);
@@ -89,11 +94,16 @@ export const login = async (req, res) => {
 
     generateTokenAndSetCookie(foundUser._id, res);
 
+    const token = jwt.sign({ userID: foundUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "14d",
+    });
+
     const userData = {
       _id: foundUser._id,
       fullName: foundUser.fullName,
       userName: foundUser.userName,
       profilePic: foundUser.profilePic,
+      token: token,
     };
 
     console.log("User logged in successfully:", userData);

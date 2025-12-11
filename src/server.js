@@ -1,3 +1,4 @@
+/* --- server.js --- */
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -36,11 +37,10 @@ const io = new Server(server, {
 
 const __dirname = path.resolve();
 
-// Middleware order: CORS -> JSON -> Cookie Parser
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // for Postman / curl
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
@@ -52,16 +52,12 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
-
-// Handle preflight OPTIONS requests
 app.options("*", cors());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/users", userRoutes);
 
-// Socket.IO
 const userSocketMap = {};
 
 export const getReceiverSocketId = (receiverId) => {
@@ -83,7 +79,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
 const port = process.env.PORT || 5000;
 server.listen(port, () => {
   connectToMongoDB();
