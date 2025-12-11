@@ -1,0 +1,67 @@
+# ========================================
+# Step 1: Create .gitignore in project root
+# ========================================
+touch .gitignore
+
+# Open the file and paste the content from the artifact
+# Or use echo to add content:
+cat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Build
+dist/
+build/
+EOF
+
+
+# ========================================
+# Step 2: Remove cached files (IMPORTANT!)
+# ========================================
+# This removes tracked files that should be ignored
+git rm -r --cached .
+git rm --cached .env
+git rm -r --cached node_modules/
+
+
+# ========================================
+# Step 3: Re-add files (without ignored ones)
+# ========================================
+git add .
+
+
+# ========================================
+# Step 4: Commit the changes
+# ========================================
+git commit -m "Add .gitignore and remove tracked env/node_modules files"
+
+
+# ========================================
+# Step 5: Push to GitHub
+# ========================================
+git push origin main
+# or if your branch is 'master':
+git push origin master
+
+
+# ========================================
+# VERIFY: Check what will be ignored
+# ========================================
+git status
+# Should NOT show node_modules, .env, or dist folders
+
+# ========================================
+# Optional: Check what's tracked vs ignored
+# ========================================
+git ls-files | grep -E "node_modules|\.env"
+# Should return nothing (empty)

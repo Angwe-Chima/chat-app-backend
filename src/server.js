@@ -15,23 +15,33 @@ import connectToMongoDB from "./db/connectToMongoDB.js";
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  "https://angwe-chima.github.io",
+  "http://localhost:5173",      // Vite default
+  "http://localhost:3000",       // Alternative dev port
+  "http://127.0.0.1:5173",       // Localhost variant
+];
+
 const io = new Server(server, {
   cors: {
-    origin: ["https://angwe-chima.github.io", "http://localhost:3000"],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
-  },  
+  },
 });
 
 const __dirname = path.resolve();
 
-// Middleware (in correct order - BEFORE routes)
+// CORS Configuration
 app.use(cors({
-  origin: ["https://angwe-chima.github.io", "http://localhost:3000"],
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Middleware (in correct order - BEFORE routes)
 app.use(express.json());
 app.use(cookieParser());
 
@@ -43,7 +53,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/users", userRoutes);
 
-// Socket.IO
+// Socket.IO ✅ (KEEP AS IS - WORKING WELL)
 const userSocketMap = {}; // {userId: socketId}
 
 export const getReceiverSocketId = (receiverId) => {
@@ -59,7 +69,7 @@ io.on("connection", (socket) => {
   // io.emit() is used to send events to all the connected clients
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  // socket.on() is used to listen to the events. can be used both on client and server side
+  // socket.on() is used to listen to the events
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);
     delete userSocketMap[userId];
@@ -67,7 +77,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 server.listen(port, () => {
   connectToMongoDB();
